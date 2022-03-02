@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Rolledm/itmo-json/issues"
   },
-  "homepage": "https://github.com/Rolledm/itmo-json#readme"
+  "homepage": "https://github.com/Rolledm/itmo-json#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
