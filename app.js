@@ -40,5 +40,9 @@ export function appSrc(express, bodyParser, createReadStream, crypto, http) {
         })
     });
 
+    app.all("*", (req, res) => {
+        res.send("itmo309574")
+    })
+
     return app
 }
