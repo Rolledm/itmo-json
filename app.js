@@ -1,32 +1,44 @@
-const express = require('express')
-const cors = require('cors')
+import cors from 'cors'
 
-const port = process.env.PORT ? process.env.PORT : 1613
+export function appSrc(express, bodyParser, createReadStream, crypto, http) {
+    const app = express()
+    app.use(cors({
+        origin: "*",
+        methods: "GET,POST,PUT,DELETE,OPTIONS",
+        headers: "x-test,Content-Type,Accept,Access-Control-Allow-Headers"
+    }))
+    
+    app.use(bodyParser.urlencoded({extended: true}))
+    
+    app.get("/login/", (req, res) => {
+        res.send("itmo309574")
+    });
 
-const app = express()
+    app.get("/code/", (req, res) => {
+        let str = createReadStream(import.meta.url.substring(7))
+        str.on("open", () => {str.pipe(res)})
+    });
 
-app.use(cors({
-    origin: "*",
-    methods: "GET,POST,PUT,DELETE,OPTIONS",
-    headers: "x-test,Content-Type,Accept,Access-Control-Allow-Headers"
-}))
+    app.get("/sha1/:*", (req, res) => {
+        let str = req.params['0']
+        let hash = crypto.createHash("sha1")
+        hash.update(str)
+        res.send(hash.digest("hex"))
+    });
 
-app.use(express.text({type: "*/*"}))
+    app.get("/req/", (req, res) => {
+        let query = req.query["addr"]
+        http.get(query, (r) => {
+            r.pipe(res)
+        })
+    });
 
-app.get("/", (req, res) => {
-    console.log(req.headers.connection)
-    res.send("Hello")
-});
+    app.post("/req/", (req, res) => {
+        let query = req.body["addr"]
+        http.get(query, (r) => {
+            r.pipe(res)
+        })
+    });
 
-app.post("/result4/", (req, res) => {
-    console.log(req)
-    console.log(req.body)
-
-    res.send({
-        "message": "itmo309574",
-        "x-result": req.headers["x-test"],
-        "x-body": req.body
-    })
-});
-
-app.listen(port, () => {console.log(port)})
+    return app
+}
