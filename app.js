@@ -5,7 +5,6 @@ export function appSrc(express, bodyParser, createReadStream, crypto, http) {
     app.use(cors({
         origin: "*",
         methods: "GET,POST,PUT,DELETE,OPTIONS",
-        headers: "x-test,Content-Type,Accept,Access-Control-Allow-Headers"
     }))
     
     app.use(bodyParser.urlencoded({extended: true}))
