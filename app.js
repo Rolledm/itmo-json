@@ -1,53 +1,53 @@
-export function appSrc(express, bodyParser, createReadStream, crypto, http) {
-    const app = express()
+export default function(express, bodyParser, createReadStream, crypto, http) {
+    const app = express();
+    const cors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,OPTIONS,DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept, Access-Control-Allow-Headers',
+        'Content-Type': 'text/plain; charset=utf-8'
+    }
     
-    app.use(bodyParser.urlencoded({extended: true}))
+    app.use(bodyParser.urlencoded({extended: true}));
     
-    app.get("/login/", (req, res) => {
-        console.log(req)
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
+    app.all("/login/", (req, res) => {
+        res.set(cors)
         res.send("itmo309574")
     });
 
-    app.get("/code/", (req, res) => {
-        console.log(req)
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
+    app.all("/code/", (req, res) => {
+        res.set(cors)
         let str = createReadStream(import.meta.url.substring(7))
         str.on("open", () => {str.pipe(res)})
     });
 
-    app.get("/sha1/:*", (req, res) => {
-        console.log(req)
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
-        let str = req.params['0']
+    app.all("/sha1/:input/", (req, res) => {
+        res.set(cors)
         let hash = crypto.createHash("sha1")
-        hash.update(str)
+        hash.update(req.params.input)
         res.send(hash.digest("hex"))
     });
 
-    app.get("/req/", (req, res) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
-        let query = req.query["addr"]
-        if (query) {
-            http.get(query, (r) => {
-                r.pipe(res)
-            })
+    app.use(bodyParser.json());
+  
+    app.all("/req/", (req, res) => {
+        res.set(cors)
+        let query = ""
+        if (req.method == "GET") {
+            query = req.query.addr
+        } else if (req.method == "POST") {
+            query = req.body.addy 
         } else {
             res.send("itmo309574")
         }
-    });
-
-    app.post("/req/", (req, res) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
-        let query = req.body["addr"]
-        if (query) {
+        if (query != "") {
             http.get(query, (r) => {
-                r.pipe(res)
+                let rawData = '';
+                r.on('data', (chunk) => {
+                    rawData += chunk;
+                });
+                r.on('end', () => {
+                    res.send(rawData);
+                });
             })
         } else {
             res.send("itmo309574")
@@ -55,10 +55,9 @@ export function appSrc(express, bodyParser, createReadStream, crypto, http) {
     });
 
     app.all("*", (req, res) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,OPTIONS,DELETE');
+        res.set(cors)
         res.send("itmo309574")
     })
 
-    return app
+    return app;
 }
